@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JB Hi-Fi Plan Comparator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fff700;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #000;
+            color: #fff700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .summary {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .plans {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .plan {
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 5px solid #999;
+        }
+
+        .plan.best {
+            background-color: #eaffea;
+            border-left: 5px solid green;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: green;
+            color: white;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        .green {
+            color: green;
+        }
+
+        .red {
+            color: red;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JB Hi-Fi Plan Comparator</h1>
+
+        <form method="POST">
+            <label>Current Monthly Cost ($)</label>
+            <input type="number" name="current_cost" step="0.01" required>
+
+            <label>Current Data (GB)</label>
+            <input type="number" name="current_data" step="0.1" required>
+
+            <label>Phone Cost ($)</label>
+            <input type="number" name="phone_cost" step="0.01" required>
+
+            <button type="submit">Compare Plans</button>
+        </form>
+
+        {% if results %}
+        <div class="summary">
+            <h3>Your Current Plan</h3>
+            <p>Total over 24 months: <strong>${{ current_total }}</strong></p>
+            <p>You're paying <strong>${{ current_monthly | round(2) }}/month</strong> or <strong>${{ current_weekly | round(2) }}/week</strong></p>
+        </div>
+
+        <h2 style="text-align:center;">JB Hi-Fi Plans</h2>
+        <div class="plans">
+            {% for plan in results %}
+            <div class="plan {% if plan.name == best_plan.name %}best{% endif %}">
+                <h3>{{ plan.name }}
+                    {% if plan.name == best_plan.name %}
+                        <span class="badge">Recommended</span>
+                    {% endif %}
+                </h3>
+                <p><strong>Data:</strong> {{ plan.data_gb }} GB/month ({{ plan.data_gain }} GB more)</p>
+                <p><strong>Effective Cost:</strong> ${{ plan.monthly_after_gift }}/month or ${{ plan.weekly_after_gift }}/week</p>
+                <p><strong>Gift Card:</strong> ${{ plan.gift_card }}</p>
+                <p><strong>Total (plan + phone):</strong> ${{ plan.total_cost }}</p>
+
+                {% if plan.weekly_diff > 0 %}
+                    <p class="red">+${{ plan.weekly_diff }}/week more than current plan</p>
+                {% else %}
+                    <p class="green">-${{ plan.weekly_diff | abs }}/week cheaper than current plan</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
